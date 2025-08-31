@@ -10,7 +10,7 @@ export default async function Loading() {
               key={index}
               className="relative w-full max-w-4xl flex justify-between items-center p-4 border border-gray-200 rounded-lg shadow-sm"
             >
-              <div className="relative size-8 md:size-16 shadow-md rounded-md bg-neutral-700 animate-pulse" />
+              <div className="relative size-8 md:size-16 shadow-md rounded-md bg-neutral-700" />
 
               <div className="relative text-4xl">
                 {index + 1}. PLAYER {Math.floor(Math.random() * 100)}
