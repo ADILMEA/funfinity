@@ -16,7 +16,7 @@ export default async function Page() {
           <div
             key={index}
             className={
-              "relative w-full max-w-4xl flex justify-between items-center p-2 md:p-4 border border-gray-200 rounded-lg shadow-sm" +
+              "relative w-full max-w-4xl flex justify-between items-center p-2 md:p-4 border border-neutral-200 rounded-lg shadow-sm" +
               (user.clerk_id == player.clerk_id ? " bg-blue-50" : "")
             }
           >
@@ -28,7 +28,7 @@ export default async function Page() {
                 fill
               />
             </div>
-            <div className="max-w-56 relative text-2xl md:text-4xl truncate">
+            <div className="max-w-56 md:max-w-xl relative text-2xl md:text-4xl truncate">
               {index + 1}.{" "}
               {player.first_name.toUpperCase() +
                 (player.last_name ? " " + player.last_name.toUpperCase() : "")}
