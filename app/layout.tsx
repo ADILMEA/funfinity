@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Pixelify_Sans, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
 
 const pixelifySans = Pixelify_Sans({
   variable: "--font-pixelify",
@@ -30,6 +31,7 @@ export default function RootLayout({
           className={`${pixelifySans.className} ${interTight.variable} antialiased`}
         >
           {children}
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>

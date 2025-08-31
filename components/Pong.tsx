@@ -71,8 +71,8 @@ export const Pong = ({
     state.ball = {
       x: width / 2,
       y: height / 2,
-      dx: 4 * scale,
-      dy: 4 * scale,
+      dx: 7 * scale,
+      dy: 7 * scale,
       size: 10 * scale,
     };
     state.paddle = {
@@ -91,6 +91,8 @@ export const Pong = ({
     resetGame();
     setIsGameActive(true);
     gameStateRef.current.isRunning = true;
+    // Reset timing reference
+    lastTimeRef.current = 0;
   }, [resetGame]);
 
   const stopGame = useCallback(async () => {
@@ -160,98 +162,134 @@ export const Pong = ({
     [isGameActive, startGame]
   );
 
-  const gameLoop = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !gameStateRef.current.isRunning) return;
+  // Game timing refs
+  const lastTimeRef = useRef<number>(0);
+  const targetFPS = 60;
+  const targetFrameTime = 1000 / targetFPS; // 16.67ms
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const gameLoop = useCallback(
+    (currentTime: number) => {
+      if (!gameStateRef.current.isRunning) return;
 
-    const state = gameStateRef.current;
-    const { width, height, scale } = canvasDimensions;
-
-    // Calculate speed multiplier based on time (increases 10% every 10 seconds)
-    const timeElapsed = (Date.now() - state.startTime) / 1000;
-    const speedMultiplier = 1 + Math.floor(timeElapsed / 10) * 0.1;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "#f0f0f0";
-    ctx.fillRect(0, 0, width, height);
-
-    // Update ball position
-    state.ball.x += state.ball.dx * speedMultiplier;
-    state.ball.y += state.ball.dy * speedMultiplier;
-
-    // Ball collision with left/right walls
-    if (
-      state.ball.x - state.ball.size <= 0 ||
-      state.ball.x + state.ball.size >= width
-    ) {
-      state.ball.dx = -state.ball.dx;
-      state.ball.x =
-        state.ball.x <= state.ball.size
-          ? state.ball.size
-          : width - state.ball.size;
-    }
-
-    // Ball collision with top wall
-    if (state.ball.y - state.ball.size <= 0) {
-      state.ball.dy = -state.ball.dy;
-      state.ball.y = state.ball.size;
-    }
-
-    // Ball collision with paddle
-    if (
-      state.ball.y + state.ball.size >= state.paddle.y &&
-      state.ball.y - state.ball.size <= state.paddle.y + state.paddle.height &&
-      state.ball.x >= state.paddle.x &&
-      state.ball.x <= state.paddle.x + state.paddle.width &&
-      state.ball.dy > 0
-    ) {
-      state.ball.dy = -Math.abs(state.ball.dy);
-      state.ball.y = state.paddle.y - state.ball.size;
-
-      // Add some angle based on where it hit the paddle
-      const hitPos =
-        (state.ball.x - (state.paddle.x + state.paddle.width / 2)) /
-        (state.paddle.width / 2);
-      state.ball.dx += hitPos * 2 * scale;
-
-      // Limit ball speed (scale max speed)
-      const maxSpeed = 8 * scale;
-      if (Math.abs(state.ball.dx) > maxSpeed) {
-        state.ball.dx = state.ball.dx > 0 ? maxSpeed : -maxSpeed;
+      // Initialize lastTime on first frame
+      if (lastTimeRef.current === 0) {
+        lastTimeRef.current = currentTime;
+        animationRef.current = requestAnimationFrame(gameLoop);
+        return;
       }
 
-      state.score++;
-      setScore(state.score);
-    }
+      const deltaTime = currentTime - lastTimeRef.current;
+      lastTimeRef.current = currentTime;
 
-    // Game over - ball went off bottom
-    if (state.ball.y > height + 20) {
-      stopGame();
-      return;
-    }
+      // Skip frames that are too fast (prevents micro-stutters)
+      if (deltaTime < 1) {
+        animationRef.current = requestAnimationFrame(gameLoop);
+        return;
+      }
 
-    // Draw paddle
-    ctx.fillStyle = "#333";
-    ctx.fillRect(
-      state.paddle.x,
-      state.paddle.y,
-      state.paddle.width,
-      state.paddle.height
-    );
+      // Cap delta time to prevent huge jumps (spiral of death protection)
+      const clampedDelta = Math.min(deltaTime, 50);
 
-    // Draw ball
-    ctx.beginPath();
-    ctx.arc(state.ball.x, state.ball.y, state.ball.size, 0, Math.PI * 2);
-    ctx.fill();
+      // Calculate time multiplier to maintain consistent 60 FPS speed
+      const timeMultiplier = clampedDelta / targetFrameTime;
 
-    if (gameStateRef.current.isRunning) {
-      animationRef.current = requestAnimationFrame(gameLoop);
-    }
-  }, [stopGame, canvasDimensions]);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const state = gameStateRef.current;
+      const { width, height, scale } = canvasDimensions;
+
+      // Calculate speed multiplier based on game time (increases 10% every 10 seconds)
+      const timeElapsed = (Date.now() - state.startTime) / 1000;
+      const speedMultiplier = 1 + Math.floor(timeElapsed / 10) * 0.1;
+
+      // Update ball position with delta time scaling
+      const moveX = state.ball.dx * speedMultiplier * timeMultiplier;
+      const moveY = state.ball.dy * speedMultiplier * timeMultiplier;
+
+      state.ball.x += moveX;
+      state.ball.y += moveY;
+
+      // Ball collision with left/right walls
+      if (
+        state.ball.x - state.ball.size <= 0 ||
+        state.ball.x + state.ball.size >= width
+      ) {
+        state.ball.dx = -state.ball.dx;
+        state.ball.x =
+          state.ball.x <= state.ball.size
+            ? state.ball.size
+            : width - state.ball.size;
+      }
+
+      // Ball collision with top wall
+      if (state.ball.y - state.ball.size <= 0) {
+        state.ball.dy = -state.ball.dy;
+        state.ball.y = state.ball.size;
+      }
+
+      // Ball collision with paddle
+      if (
+        state.ball.y + state.ball.size >= state.paddle.y &&
+        state.ball.y - state.ball.size <=
+          state.paddle.y + state.paddle.height &&
+        state.ball.x >= state.paddle.x &&
+        state.ball.x <= state.paddle.x + state.paddle.width &&
+        state.ball.dy > 0
+      ) {
+        state.ball.dy = -Math.abs(state.ball.dy);
+        state.ball.y = state.paddle.y - state.ball.size;
+
+        // Add some angle based on where it hit the paddle
+        const hitPos =
+          (state.ball.x - (state.paddle.x + state.paddle.width / 2)) /
+          (state.paddle.width / 2);
+        state.ball.dx += hitPos * 2 * scale;
+
+        // Limit ball speed (scale max speed)
+        const maxSpeed = 12 * scale;
+        if (Math.abs(state.ball.dx) > maxSpeed) {
+          state.ball.dx = state.ball.dx > 0 ? maxSpeed : -maxSpeed;
+        }
+
+        state.score++;
+        setScore(state.score);
+      }
+
+      // Game over - ball went off bottom
+      if (state.ball.y > height + 20) {
+        stopGame();
+        return;
+      }
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#f0f0f0";
+      ctx.fillRect(0, 0, width, height);
+
+      // Draw paddle
+      ctx.fillStyle = "#333";
+      ctx.fillRect(
+        state.paddle.x,
+        state.paddle.y,
+        state.paddle.width,
+        state.paddle.height
+      );
+
+      // Draw ball
+      ctx.beginPath();
+      ctx.arc(state.ball.x, state.ball.y, state.ball.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (gameStateRef.current.isRunning) {
+        animationRef.current = requestAnimationFrame(gameLoop);
+      }
+    },
+    [stopGame, canvasDimensions]
+  );
 
   // Handle resize
   useEffect(() => {
@@ -319,7 +357,7 @@ export const Pong = ({
         />
 
         {!isGameActive && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10 tracking-widest text-neutral-600">
+          <div className="absolute inset-0 flex items-center justify-center tracking-widest text-neutral-600">
             <div className="text-center">
               <div className="text-base sm:text-lg md:text-xl mb-2">
                 {gameOver ? "GAME OVER!" : "TAP TO START"}
@@ -335,14 +373,19 @@ export const Pong = ({
         )}
       </div>
 
-      <div className="w-full flex flex-col sm:flex-row justify-between items-center md:text-4xl text-5xl mt-4 gap-2">
-        <div className="text-left md:text-center">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center text-lg sm:text-xl mt-4 gap-2">
+        <div className="text-center sm:text-left">
           HIGH SCORE:{" "}
           <span className="font-bold text-blue-600">{highScore}</span>
         </div>
-        <div className="text-right md:text-center">
+        <div className="text-center sm:text-right">
           SCORE: <span className="font-bold text-green-600">{score}</span>
         </div>
+      </div>
+
+      {/* Instructions for mobile */}
+      <div className="text-xs text-neutral-500 text-center mt-2 sm:hidden">
+        Drag your finger on the game area to move the paddle
       </div>
     </div>
   );

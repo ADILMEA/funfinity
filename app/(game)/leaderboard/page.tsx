@@ -16,7 +16,7 @@ export default async function Page() {
               key={index}
               className="relative w-full max-w-4xl flex justify-between items-center p-4 border border-gray-200 rounded-lg shadow-sm"
             >
-              <div className="relative size-16 shadow-md rounded-md">
+              <div className="relative size-8 md:size-16 shadow-md rounded-md">
                 <Image
                   src={player.profile_image}
                   alt={player.first_name + " image"}
@@ -24,14 +24,13 @@ export default async function Page() {
                   fill
                 />
               </div>
-              <div className="text-4xl">
+              <div className="relative text-4xl">
                 {index + 1}. {player.first_name.toUpperCase()}
               </div>
-              <div className="text-6xl font-bold">{player.high_score}</div>
-
-              <div className="absolute left-[50%] bottom-0">
+              <div className="absolute left-[50%] bottom-0 text-lg">
                 {user.clerk_id == player.clerk_id ? "YOU" : ""}
               </div>
+              <div className="text-6xl font-bold">{player.high_score}</div>
             </div>
           ))}
         </div>

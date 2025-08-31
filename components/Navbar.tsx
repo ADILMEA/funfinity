@@ -2,19 +2,24 @@ import { UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   return (
-    <header className="grid grid-cols-3 justify px-8 py-4 border-b border-neutral-200">
-      <h2 className="justify-self-start text-3xl">PONG WARS</h2>
+    <header className="grid md:grid-cols-2 justify-center px-8 py-4 border-b border-neutral-200">
+      <h2 className="text-center md:justify-self-start text-5xl md:text-3xl font-semibold">
+        PONG WARS
+      </h2>
 
-      <ul className="flex justify-self-center gap-8 items-center font-inter font-semibold tracking-[0.2rem] text-neutral-500 ">
-        <li className="hover:text-black transition duration-500">
-          <a href="/arena">ARENA</a>
-        </li>
-        <li className="hover:text-black transition duration-500">
-          <a href="/leaderboard">LEADERBOARD</a>
-        </li>
-      </ul>
+      <nav className="flex justify-end items-center mt-8 md:mt-0 gap-8 font-inter font-semibold tracking-[0.2rem] text-neutral-500 ">
+        <a href="/arena" className="hover:text-black transition duration-500">
+          ARENA
+        </a>
+        <a
+          href="/leaderboard"
+          className="hover:text-black transition duration-500"
+        >
+          LEADERBOARD
+        </a>
+      </nav>
 
-      <div className="justify-self-end">
+      <div className="absolute bottom-8 right-8">
         <UserButton
           appearance={{
             elements: {
