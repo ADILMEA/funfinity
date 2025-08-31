@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-pixelify: var(--font-pixelify);
+  --font-inter: var(--font-inter);
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
