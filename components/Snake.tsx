@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 "use client";
 
 import { updateHighscore } from "@/db/queries";
@@ -67,8 +65,8 @@ export const Snake = ({
     const gridCount = getGridCount();
     const state = gameStateRef.current;
 
-    let foodPos;
-    let isOnSnake;
+    let foodPos: { x: number; y: number };
+    let isOnSnake: boolean;
 
     do {
       foodPos = {
