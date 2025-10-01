@@ -11,7 +11,7 @@ async function getOrCreateUser() {
   //Existing user
   const existing = await sql`
     SELECT *
-    FROM score
+    FROM users
     WHERE clerk_id = ${user?.id};
   `
   if (existing.length > 0) {
@@ -20,7 +20,7 @@ async function getOrCreateUser() {
 
   //New user
   const inserted = await sql`
-    INSERT INTO score (clerk_id, first_name, last_name, profile_image, high_score)
+    INSERT INTO users (clerk_id, first_name, last_name, profile_image, high_score)
     VALUES (
         ${user!.id},
         ${user?.firstName},
@@ -37,7 +37,7 @@ async function getOrCreateUser() {
 async function getLeaderboard() {
   const leaderboard = await sql`
     SELECT clerk_id, first_name, last_name, high_score, profile_image
-    FROM score
+    FROM users
     ORDER BY high_score DESC;
   `
  
@@ -46,7 +46,7 @@ async function getLeaderboard() {
 
 async function updateHighscore({highScore, clerkID}: {highScore: number, clerkID: string}) {
   const updated = await sql`
-    UPDATE score
+    UPDATE users
     SET high_score = GREATEST(high_score, ${highScore})
     WHERE clerk_id = ${clerkID}
     RETURNING high_score;
@@ -55,5 +55,16 @@ async function updateHighscore({highScore, clerkID}: {highScore: number, clerkID
   return updated[0].high_score;
 }
 
+async function updateTeam({team, clerkID}: {team: string, clerkID: string}) {
+  const updated = await sql`
+    UPDATE users
+    SET team = ${team}
+    WHERE clerk_id = ${clerkID}
+    RETURNING team;
+  `
 
-export {getLeaderboard, getOrCreateUser, updateHighscore}
+  return updated[0].team;
+}
+
+
+export {getLeaderboard, getOrCreateUser, updateHighscore, updateTeam}

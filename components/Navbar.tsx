@@ -5,7 +5,7 @@ export default function Navbar() {
     <header className="flex flex-col md:flex-row justify-center md:justify-between px-4 md:px-8 py-4 border-b border-neutral-200">
       <div className="flex justify-between md:justify-self-start gap-10">
         <h2 className="text-center text-5xl md:text-3xl font-semibold">
-          PONG WARS
+          FUNFINITY
         </h2>
         <UserButton
           appearance={{

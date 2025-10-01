@@ -1,6 +1,7 @@
 import { getLeaderboard, getOrCreateUser } from "@/db/queries";
 import Image from "next/image";
-import React from "react";
+
+export const revalidate = 60;
 
 export default async function Page() {
   const user = await getOrCreateUser();
