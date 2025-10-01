@@ -1,7 +1,13 @@
 "use client";
 
 import { updateHighscore } from "@/db/queries";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 
 export const Snake = ({
   prevHighScore,
@@ -45,17 +51,28 @@ export const Snake = ({
 
   // Calculate responsive canvas size
   const updateCanvasSize = useCallback(() => {
-    const maxSize = Math.min(
-      window.innerWidth - 32,
-      window.innerHeight - 250,
-      500
-    );
-    const gridCount = Math.floor(maxSize / gridSize);
+    const parent = containerRef.current?.parentElement;
+    // fallback if parent isn't found
+    let availableWidth = window.innerWidth - 32;
+
+    if (parent) {
+      const style = getComputedStyle(parent);
+      const paddingLeft = parseFloat(style.paddingLeft) || 0;
+      const paddingRight = parseFloat(style.paddingRight) || 0;
+      // parent.clientWidth includes padding, so subtract padding to get content width
+      availableWidth = Math.max(
+        0,
+        parent.clientWidth - paddingLeft - paddingRight
+      );
+    }
+
+    const maxSize = Math.min(availableWidth, window.innerHeight - 250, 500);
+    const gridCount = Math.max(1, Math.floor(maxSize / gridSize));
     const size = gridCount * gridSize;
     const scale = size / 500;
 
     setCanvasDimensions({ width: size, height: size, scale });
-  }, []);
+  }, [gridSize]);
 
   const getGridCount = useCallback(() => {
     return Math.floor(canvasDimensions.width / gridSize);
@@ -340,11 +357,12 @@ export const Snake = ({
   );
 
   // Handle resize
-  useEffect(() => {
+  useLayoutEffect(() => {
     const handleResize = () => {
       updateCanvasSize();
     };
 
+    // set size before paint
     updateCanvasSize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);

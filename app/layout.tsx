@@ -17,7 +17,7 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   title: "Funfinity | Vibgyor",
   description:
-    "PongWars is an exciting game event conducted as part of MILEN 8.0, organized by IEEE MEA SB. Compete, climb the leaderboard, and showcase your skills!",
+    "Funfinity is the second task of VIBGYOR and is based on the infamous snake game.",
 };
 
 export default function RootLayout({
