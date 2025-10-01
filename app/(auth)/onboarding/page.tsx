@@ -3,11 +3,9 @@
 import * as React from "react";
 import { completeOnboarding, getPlayerData } from "./_actions";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const { isLoaded } = useAuth();
   const [selectedTeam, setSelectedTeam] = React.useState<string | null>(null);
   const [playerName, setPlayerName] = React.useState<string>("");
@@ -44,7 +42,7 @@ export default function OnboardingPage() {
 
         if (result.success) {
           // Small delay to ensure Clerk metadata is propagated
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
 
           // Force a hard navigation to ensure metadata is refreshed
           window.location.href = "/arena";
