@@ -42,7 +42,7 @@ export default function OnboardingPage() {
 
         if (result.success) {
           // Small delay to ensure Clerk metadata is propagated
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 500));
 
           // Force a hard navigation to ensure metadata is refreshed
           window.location.href = "/arena";
